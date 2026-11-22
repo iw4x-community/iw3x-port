@@ -65,35 +65,38 @@ namespace Components
 			static const auto useIW4SMC = Game::Dvar_FindVar("iw3x_fix_model_cache");
 			static const bool shouldRepairCache = useIW4SMC && useIW4SMC->current.string == "1"s;
 
-			if (shouldRepairCache && model->lodInfo[i].smcIndexPlusOne)
+			if (model->lodInfo[i].smcIndexPlusOne)
 			{
-				// smcIndex is always between 0 and 5 (included).
-				// On iw3 it's always between 0 and 3
-				// We can use it directly for mw2
-				xmodel.lodInfo[i].smcBaseIndexPlusOne = model->lodInfo[i].smcIndexPlusOne;
-
-				// smcAllocBits is always between 9 and 0 (included). It will use some of the available the buckets of mw2
-				// 9 (512) = bucket 22
-				// 8 (256) = 18
-				// 7 (128) = 13
-				// 6 (64) = 8
-				// 5 (32) = 3
-				// 4 (16) = 0
-				// 3 and under ??
-				char buckets[] = { 0, 0, 0, 0, 0, 3, 8, 13, 18, 22 };
-				int allocBits = static_cast<int>(model->lodInfo[i].smcAllocBits);
-				assert(allocBits >= 0);
-				assert(allocBits < ARRAYSIZE(buckets));
-				xmodel.lodInfo[i].smcBucket = buckets[allocBits];
-
-				xmodel.lodInfo[i].smcSubIndexMask = 0; // As far as I know, this one is unused
-
-				if (xmodel.lodInfo[i].smcBucket > 24 || xmodel.lodInfo[i].smcBucket < 0)
+				if (shouldRepairCache)
 				{
-					// Impossible
-					xmodel.lodInfo[i].smcBaseIndexPlusOne = 0;
-					xmodel.lodInfo[i].smcBucket = 0;
-					assert(false && "unreachable");
+					// smcIndex is always between 0 and 5 (included).
+					// On iw3 it's always between 0 and 3
+					// We can use it directly for mw2
+					xmodel.lodInfo[i].smcBaseIndexPlusOne = model->lodInfo[i].smcIndexPlusOne;
+
+					// smcAllocBits is always between 9 and 0 (included). It will use some of the available the buckets of mw2
+					// 9 (512) = bucket 22
+					// 8 (256) = 18
+					// 7 (128) = 13
+					// 6 (64) = 8
+					// 5 (32) = 3
+					// 4 (16) = 0
+					// 3 and under ??
+					char buckets[] = { 0, 0, 0, 0, 0, 3, 8, 13, 18, 22 };
+					int allocBits = static_cast<int>(model->lodInfo[i].smcAllocBits);
+					assert(allocBits >= 0);
+					assert(allocBits < ARRAYSIZE(buckets));
+					xmodel.lodInfo[i].smcBucket = buckets[allocBits];
+
+					xmodel.lodInfo[i].smcSubIndexMask = 0; // As far as I know, this one is unused
+
+					if (xmodel.lodInfo[i].smcBucket > 24 || xmodel.lodInfo[i].smcBucket < 0)
+					{
+						// Impossible
+						xmodel.lodInfo[i].smcBaseIndexPlusOne = 0;
+						xmodel.lodInfo[i].smcBucket = 0;
+						assert(false && "unreachable");
+					}
 				}
 			}
 			else
